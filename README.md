@@ -9,14 +9,22 @@ This repository uses the recommended structure for a Soroban project:
 ```text
 .
 ├── contracts
-│   └── user-contract
-│       ├── src
-│       │   ├── lib.rs
-│       │   └── test
+│   └── user-contract
+│       ├── src
+│       │   ├── lib.rs
+│       │   ├── bridge
+│       │   │   └── ..
+│       │   ├── methods
+│       │   │   └── ..
+│       │   ├── storage
+│       │   │   ├── ..
+│       │   │   └── types
+│       │   │       └── ..
+│       │   └── tests
 │       │       ├── config
 │       │       │   └── contract.rs
 │       │       └── test.rs
-│       └── Cargo.toml
+│       └── Cargo.toml
 ├── Cargo.toml
 └── README.md
 ```
