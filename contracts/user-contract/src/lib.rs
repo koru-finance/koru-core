@@ -2,7 +2,7 @@
 
 mod bridge;
 mod contract;
-mod tests;
-mod storage;
-mod shared;
 mod methods;
+mod shared;
+mod storage;
+mod tests;
