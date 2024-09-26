@@ -1,9 +1,6 @@
 use soroban_sdk::{vec, Address, BytesN, Env, Val, Vec, U256};
 
-use crate::shared::{
-    constants::{BRIDGE_CHAIN_ID, EXT_RECEIVER_TOKEN_ADDRESS},
-    utils::str_to_bytesn32,
-};
+use crate::{shared::constants::BRIDGE_CHAIN_ID, storage::storage::get_external_chain_token};
 
 pub fn build_args(
     env: &Env,
@@ -18,7 +15,7 @@ pub fn build_args(
     let recipient_vals = vec![&env, recipient].to_vals();
     let chain_id_vals = vec![&env, BRIDGE_CHAIN_ID].to_vals();
     let amount_vals = vec![&env, amount].to_vals();
-    let receiver_token_bytes = str_to_bytesn32(&env, EXT_RECEIVER_TOKEN_ADDRESS);
+    let receiver_token_bytes = get_external_chain_token(&env);
     let ext_receiver_token_vals = vec![&env, receiver_token_bytes].to_vals();
 
     let nonce_vals = vec![
@@ -26,7 +23,7 @@ pub fn build_args(
         U256::from_u128(&env, env.ledger().timestamp() as u128),
     ]
     .to_vals();
-    let gas_amount_vals = vec![&env, 0].to_vals();
+    let gas_amount_vals = vec![&env, 0 as u128].to_vals();
 
     let bridge_fee_vals = vec![&env, bridge_fee].to_vals();
 

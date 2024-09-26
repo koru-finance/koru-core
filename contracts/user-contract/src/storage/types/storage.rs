@@ -6,5 +6,6 @@ pub enum DataKey {
     Admin,
     User(Address),
     Bridge,
+    ExternalChainToken,
     Token,
 }
