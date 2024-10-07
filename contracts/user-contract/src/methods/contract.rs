@@ -1,7 +1,9 @@
 use soroban_sdk::{Address, BytesN, Env};
 
 use crate::storage::{
-    storage::{has_admin, set_admin, set_bridge_contract, set_external_chain_token, set_token},
+    storage::{
+        get_admin, has_admin, set_admin, set_bridge_contract, set_external_chain_token, set_token,
+    },
     strategy::{get_strategy, has_strategy, set_strategy},
     types::{contract_errors::ContractError, strategy::Strategy},
 };
@@ -41,6 +43,19 @@ pub fn initialize(
     set_token(env, token);
     set_bridge_contract(env, bridge_contract);
     set_external_chain_token(env, external_chain_token);
+
+    Ok(())
+}
+
+pub fn upgrade_bytecode(env: &Env, new_wasm_hash: BytesN<32>) -> Result<(), ContractError> {
+    if !has_admin(&env) {
+        return Err(ContractError::NotInitialized);
+    }
+
+    let admin: Address = get_admin(&env);
+    admin.require_auth();
+
+    env.deployer().update_current_contract_wasm(new_wasm_hash);
 
     Ok(())
 }
