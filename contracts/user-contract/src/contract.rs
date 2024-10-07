@@ -1,10 +1,13 @@
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env};
 
 use crate::{
-    methods::{contract::save_strategy, public::deposit_and_bridge},
+    methods::{
+        contract::{initialize, save_strategy},
+        public::deposit_and_bridge,
+    },
     storage::{
         strategy::get_strategy,
-        types::strategy::Strategy,
+        types::{contract_errors::ContractError, strategy::Strategy},
     },
 };
 
@@ -13,6 +16,16 @@ pub struct UserContract;
 
 #[contractimpl]
 impl UserContract {
+    pub fn initialize(
+        env: Env,
+        admin: Address,
+        token: Address,
+        bridge_contract: Address,
+        external_chain_token: BytesN<32>,
+    ) -> Result<(), ContractError> {
+        initialize(&env, admin, token, bridge_contract, external_chain_token)
+    }
+
     pub fn deposit(env: Env, from: Address, receiver: BytesN<32>, amount: u128, extra_fee: u128) {
         from.require_auth();
 
