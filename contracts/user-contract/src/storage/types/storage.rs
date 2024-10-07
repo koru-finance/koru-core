@@ -8,4 +8,5 @@ pub enum DataKey {
     Bridge,
     ExternalChainToken,
     Token,
+    Strategy(u32),
 }
