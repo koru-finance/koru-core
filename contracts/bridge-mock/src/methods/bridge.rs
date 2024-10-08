@@ -20,8 +20,6 @@ pub fn swap_and_bridge(
     gas_amount: u128,
     fee_token_amount: u128,
 ) -> Result<(), BridgeError> {
-    sender.require_auth();
-
     if !has_admin(&env) {
         return Err(BridgeError::Uninitialized);
     }
@@ -33,12 +31,16 @@ pub fn swap_and_bridge(
     }
 
     let client = TokenClient::Client::new(&env, &token);
-    let total_transfer_amount = amount as i128 + fee_token_amount as i128;
+    let mut total_transfer_amount = amount as i128 + fee_token_amount as i128;
+
+    if total_transfer_amount < 0 {
+        total_transfer_amount = total_transfer_amount * -1;
+    }
 
     client.transfer(
         &sender,
         &env.current_contract_address(),
-        &total_transfer_amount,
+        &total_transfer_amount.abs(),
     );
 
     emitt_swap_and_bridge(
