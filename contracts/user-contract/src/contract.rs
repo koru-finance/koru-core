@@ -2,7 +2,7 @@ use soroban_sdk::{contract, contractimpl, Address, BytesN, Env};
 
 use crate::{
     methods::{
-        contract::{initialize, save_strategy},
+        contract::{initialize, save_strategy, upgrade_bytecode},
         public::deposit_and_bridge,
     },
     storage::{
@@ -38,5 +38,9 @@ impl UserContract {
 
     pub fn get_strategy(env: Env, id: u32) -> Strategy {
         get_strategy(&env, &id)
+    }
+
+    pub fn upgrade(env: Env, new_wasm_hash: BytesN<32>) -> Result<(), ContractError> {
+        upgrade_bytecode(&env, new_wasm_hash)
     }
 }
