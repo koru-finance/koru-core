@@ -32,10 +32,7 @@ pub(crate) fn get_token(env: &Env) -> Address {
     env.storage().instance().get(&key).unwrap()
 }
 
-pub(crate) fn has_external_chain_token(env: &Env) -> bool {
-    let key = DataKey::ExternalChainToken;
-    env.storage().instance().has(&key)
-}
+
 
 pub(crate) fn set_external_chain_token(env: &Env, token: BytesN<32>) {
     let key = DataKey::ExternalChainToken;
@@ -59,5 +56,25 @@ pub(crate) fn set_admin(env: &Env, admin: Address) {
 
 pub(crate) fn get_admin(env: &Env) -> Address {
     let key = DataKey::Admin;
+    env.storage().instance().get(&key).unwrap()
+}
+
+pub(crate) fn set_deposit_address(env: &Env, address: Address) {
+    let key = DataKey::DespositAddress;
+    env.storage().instance().set(&key, &address);
+}
+
+pub(crate) fn get_deposit_address(env: &Env) -> Address {
+    let key = DataKey::DespositAddress;
+    env.storage().instance().get(&key).unwrap()
+}
+
+pub(crate) fn set_protocol_address(env: &Env, address: Address) {
+    let key = DataKey::ProtocolAddress;
+    env.storage().instance().set(&key, &address);
+}
+
+pub(crate) fn get_protocol_address(env: &Env) -> Address {
+    let key = DataKey::ProtocolAddress;
     env.storage().instance().get(&key).unwrap()
 }
