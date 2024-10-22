@@ -1,9 +1,8 @@
-use soroban_sdk::{Address, BytesN, Env};
+use soroban_sdk::{Address, BytesN, Env, token};
 
 use crate::storage::{
     storage::{
-        get_admin, has_admin, set_admin, set_bridge_contract, set_deposit_address,
-        set_external_chain_token, set_protocol_address, set_token,
+        get_admin, get_token, has_admin, set_admin, set_bridge_contract, set_deposit_address, set_external_chain_token, set_protocol_address, set_token
     },
     strategy::{get_strategy, has_strategy, set_strategy},
     transaction,
@@ -76,4 +75,21 @@ pub(crate) fn get_transaction(
     end_period: u64,
 ) -> Transaction {
     transaction::get(&env, address, start_period, end_period)
+}
+
+pub(crate) fn invest(
+    env: &Env,
+    address: Address,
+    amount: i128,
+) -> i128 {
+    address.require_auth();
+
+    let token = get_token(&env);
+
+    let token_client = token::TokenClient::new(&env, &token);
+
+
+    token_client.transfer(&address, &env.current_contract_address(), &amount);
+
+    token_client.balance(&env.current_contract_address())
 }

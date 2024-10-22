@@ -103,4 +103,8 @@ impl UserContract {
     pub fn set_koru_penalty(env: &Env, penalty: u128) {
         admin::set_koru_penalty(&env, penalty);
     }
+
+    pub fn invest(env: Env, address: Address, amount: i128) -> i128 { 
+        contract::invest(&env, address, amount) 
+    }
 }
