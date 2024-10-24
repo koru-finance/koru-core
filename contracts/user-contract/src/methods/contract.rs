@@ -1,8 +1,9 @@
-use soroban_sdk::Env;
+use soroban_sdk::{Address, BytesN, Env};
 
 use crate::storage::{
+    storage::{has_admin, set_admin, set_bridge_contract, set_external_chain_token, set_token},
     strategy::{get_strategy, has_strategy, set_strategy},
-    types::strategy::Strategy,
+    types::{contract_errors::ContractError, strategy::Strategy},
 };
 
 pub fn save_strategy(env: &Env, id: u32, duration: u128, interest_rate: u128, pt: u128) {
@@ -23,4 +24,23 @@ pub fn save_strategy(env: &Env, id: u32, duration: u128, interest_rate: u128, pt
 
         set_strategy(env, &id, stored_strategy);
     }
+}
+
+pub fn initialize(
+    env: &Env,
+    admin: Address,
+    token: Address,
+    bridge_contract: Address,
+    external_chain_token: BytesN<32>, 
+) -> Result<(), ContractError> {
+    if !has_admin(&env) {
+        return Err(ContractError::AlreadyInitialized);
+    }
+
+    set_admin(env, admin);
+    set_token(env, token);
+    set_bridge_contract(env, bridge_contract);
+    set_external_chain_token(env, external_chain_token);
+
+    Ok(())
 }
