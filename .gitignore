@@ -4,3 +4,6 @@ test_snapshots
 
 # Local Soroban settings
 .soroban
+
+# Folders
+scripts

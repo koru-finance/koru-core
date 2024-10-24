@@ -1,13 +1,10 @@
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env};
 
 use crate::{
-    methods::{
-        contract::{initialize, save_strategy, upgrade_bytecode},
-        public::deposit_and_bridge,
-    },
+    methods::{admin, contract, public},
     storage::{
         strategy::get_strategy,
-        types::{contract_errors::ContractError, strategy::Strategy},
+        types::{contract_errors::ContractError, strategy::Strategy, transaction::Transaction},
     },
 };
 
@@ -22,25 +19,92 @@ impl UserContract {
         token: Address,
         bridge_contract: Address,
         external_chain_token: BytesN<32>,
+        deposit_address: Address,
+        protocol_address: Address,
     ) -> Result<(), ContractError> {
-        initialize(&env, admin, token, bridge_contract, external_chain_token)
+        contract::initialize(
+            &env,
+            admin,
+            token,
+            bridge_contract,
+            external_chain_token,
+            deposit_address,
+            protocol_address,
+        )
     }
 
-    pub fn deposit(env: Env, from: Address, receiver: BytesN<32>, amount: u128, extra_fee: u128) {
-        from.require_auth();
+    pub fn deposit(env: Env, borrower: Address, collateral: u128, strategy_id: u32) -> Transaction {
+        borrower.require_auth();
 
-        deposit_and_bridge(&env, from.clone(), receiver.clone(), amount, extra_fee);
+        public::deposit_and_bridge(&env, borrower.clone(), collateral, strategy_id)
     }
 
-    pub fn store_strategy(env: Env, id: u32, duration: u128, interest_rate: u128, pt: u128) {
-        save_strategy(&env, id, duration, interest_rate, pt);
+    pub fn start_withdraw(
+        env: Env,
+        address: Address,
+        start_period: u64,
+        end_period: u64,
+    ) -> Result<(), ContractError> {
+        public::start_withdraw(&env, address, start_period, end_period)
+    }
+
+    pub fn update_withdraw_status(
+        env: Env,
+        address: Address,
+        start_period: u64,
+        end_period: u64,
+        can_withdraw: bool,
+    ) {
+        admin::update_withdraw_status(&env, address, start_period, end_period, can_withdraw);
+    }
+
+    pub fn withdraw(
+        env: Env,
+        address: Address,
+        start_period: u64,
+        end_period: u64,
+    ) -> Result<(), ContractError> {
+        public::withdraw(&env, address, start_period, end_period)
     }
 
     pub fn get_strategy(env: Env, id: u32) -> Strategy {
         get_strategy(&env, &id)
     }
 
+    pub fn get_transaction(
+        env: Env,
+        address: Address,
+        start_period: u64,
+        end_period: u64,
+    ) -> Transaction {
+        contract::get_transaction(&env, address, start_period, end_period)
+    }
+
+    pub fn store_strategy(env: Env, id: u32, duration: u64, interest_rate: u128, pt: u128) {
+        contract::save_strategy(&env, id, duration, interest_rate, pt);
+    }
+
     pub fn upgrade(env: Env, new_wasm_hash: BytesN<32>) -> Result<(), ContractError> {
-        upgrade_bytecode(&env, new_wasm_hash)
+        contract::upgrade_bytecode(&env, new_wasm_hash)
+    }
+
+    pub fn set_investor_premium(env: &Env, premium: u128) {
+        admin::set_investor_premium(&env, premium);
+    }
+
+    pub fn set_protocol_premium(env: &Env, premium: u128) {
+        admin::set_protocol_premium(&env, premium);
+    }
+
+    pub fn set_protocol_penalty(env: &Env, penalty: u128) {
+        admin::set_protocol_penalty(&env, penalty);
+    }
+
+    pub fn set_koru_penalty(env: &Env, penalty: u128) {
+        admin::set_koru_penalty(&env, penalty);
+    }
+
+    pub fn invest(env: Env, address: Address, amount: i128) -> i128 { 
+        contract::invest(&env, address, amount) 
     }
 }

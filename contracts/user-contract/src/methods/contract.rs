@@ -1,19 +1,23 @@
-use soroban_sdk::{Address, BytesN, Env};
+use soroban_sdk::{Address, BytesN, Env, token};
 
 use crate::storage::{
     storage::{
-        get_admin, has_admin, set_admin, set_bridge_contract, set_external_chain_token, set_token,
+        get_admin, get_token, has_admin, set_admin, set_bridge_contract, set_deposit_address, set_external_chain_token, set_protocol_address, set_token
     },
     strategy::{get_strategy, has_strategy, set_strategy},
-    types::{contract_errors::ContractError, strategy::Strategy},
+    transaction,
+    types::{contract_errors::ContractError, strategy::Strategy, transaction::Transaction},
 };
 
-pub fn save_strategy(env: &Env, id: u32, duration: u128, interest_rate: u128, pt: u128) {
+pub fn save_strategy(env: &Env, id: u32, duration: u64, yield_rate: u128, pt: u128) {
+    let admin = get_admin(&env);
+    admin.require_auth();
+
     if !has_strategy(&env, &id) {
         let strategy = Strategy {
             id,
             duration,
-            interest_rate,
+            yield_rate,
             pt,
         };
 
@@ -21,7 +25,7 @@ pub fn save_strategy(env: &Env, id: u32, duration: u128, interest_rate: u128, pt
     } else {
         let mut stored_strategy = get_strategy(&env, &id);
         stored_strategy.duration = duration;
-        stored_strategy.interest_rate = interest_rate;
+        stored_strategy.yield_rate = yield_rate;
         stored_strategy.pt = pt;
 
         set_strategy(env, &id, stored_strategy);
@@ -34,6 +38,8 @@ pub fn initialize(
     token: Address,
     bridge_contract: Address,
     external_chain_token: BytesN<32>,
+    deposit_address: Address,
+    protocol_address: Address,
 ) -> Result<(), ContractError> {
     if has_admin(&env) {
         return Err(ContractError::AlreadyInitialized);
@@ -43,6 +49,8 @@ pub fn initialize(
     set_token(env, token);
     set_bridge_contract(env, bridge_contract);
     set_external_chain_token(env, external_chain_token);
+    set_deposit_address(env, deposit_address);
+    set_protocol_address(env, protocol_address);
 
     Ok(())
 }
@@ -58,4 +66,30 @@ pub fn upgrade_bytecode(env: &Env, new_wasm_hash: BytesN<32>) -> Result<(), Cont
     env.deployer().update_current_contract_wasm(new_wasm_hash);
 
     Ok(())
+}
+
+pub(crate) fn get_transaction(
+    env: &Env,
+    address: Address,
+    start_period: u64,
+    end_period: u64,
+) -> Transaction {
+    transaction::get(&env, address, start_period, end_period)
+}
+
+pub(crate) fn invest(
+    env: &Env,
+    address: Address,
+    amount: i128,
+) -> i128 {
+    address.require_auth();
+
+    let token = get_token(&env);
+
+    let token_client = token::TokenClient::new(&env, &token);
+
+
+    token_client.transfer(&address, &env.current_contract_address(), &amount);
+
+    token_client.balance(&env.current_contract_address())
 }

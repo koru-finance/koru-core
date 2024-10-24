@@ -4,9 +4,17 @@ use soroban_sdk::{contracttype, Address};
 #[contracttype]
 pub enum DataKey {
     Admin,
-    User(Address),
     Bridge,
+    DespositAddress,
     ExternalChainToken,
-    Token,
+    KoruPenalty,
+    InvestorPremium,
+    Premium(Address),
+    ProtocolAddress,
+    ProtocolPremium,
+    ProtocolPenalty,
     Strategy(u32),
+    Token,
+    Transaction((Address, u64, u64)),
+    User(Address),
 }
