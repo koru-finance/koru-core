@@ -31,7 +31,7 @@ pub fn initialize(
     admin: Address,
     token: Address,
     bridge_contract: Address,
-    external_chain_token: BytesN<32>,
+    external_chain_token: BytesN<32>, 
 ) -> Result<(), ContractError> {
     if !has_admin(&env) {
         return Err(ContractError::AlreadyInitialized);
