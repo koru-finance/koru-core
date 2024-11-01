@@ -1,7 +1,9 @@
 use soroban_sdk::{contracttype, vec, Address, BytesN, Env, IntoVal, Symbol, Val, Vec, U256};
 
+use crate::{storage::types::error::BridgeError, utils};
 
-pub fn emitt_swap_and_bridge(
+
+pub fn swap_and_bridge(
     env: &Env,
     sender: Address,
     token: Address,
@@ -53,6 +55,28 @@ pub fn emitt_swap_and_bridge(
     env.events().publish(topics, data);
 }
 
+
+pub fn receive_tokens(
+    env: &Env,
+    amount: u128,
+    recipient: Address,
+    receive_token: BytesN<32>,
+    nonce: U256,
+) -> Result<(), BridgeError> {
+    let topics = (Symbol::new(&env, "TokensReceived"),);
+
+    let recipient_bytes_32 = utils::event::address_to_bytes(&env, &recipient)?;
+
+    env.events().publish(topics, TokensReceived {
+        amount,
+        recipient: recipient_bytes_32,
+        nonce: nonce.clone(),
+        message: receive_token.clone(),
+    });
+
+    Ok(())
+}
+
 #[contracttype]
 pub struct TokensSent {
     pub amount: u128,
@@ -67,4 +91,13 @@ pub struct ReceiveFee {
     pub bridge_transaction_cost: u128,
     pub message_transaction_cost: u128,
     pub extra_gas: u128,
+}
+
+
+#[contracttype]
+pub struct TokensReceived {
+    pub amount: u128,
+    pub recipient: BytesN<32>,
+    pub nonce: U256,
+    pub message: BytesN<32>
 }
